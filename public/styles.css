@@ -1,0 +1,131 @@
+.navegacion {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.tit-form {
+  margin: auto;
+  margin-top: 4px;
+  padding: 0;
+}
+
+.form-login {
+  width: 700px;
+  padding: 40px;
+  background-color: #ffffff;
+  margin: auto;
+  margin-top: 200px;
+  border-radius: 4px;
+  border: 1px solid #000000;
+}
+
+legend {
+  text-align: center;
+}
+
+.row { /* Cambiado de 'row' a '.row' para que sea una clase válida */
+  margin-top: 10000px;
+  align-items: center;
+  width: 100%;
+}
+
+.div {
+  padding: 12px;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+}
+
+.logo-container h1 {
+  color: white;
+  margin-left: 0px;
+}
+
+.navbar-toggler {
+  border: none;
+}
+
+.navbar-nav .nav-link { 
+  color: white;
+}
+
+.item {
+  width: 312px;
+  height: 312px;
+}
+
+.menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.menu-list li {
+  margin-bottom: 2px;
+  margin-top: 5px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.menu-list img {
+  width: 20px;
+  height: 2px;
+  background-color: white;
+}
+
+
+.text-main {
+  --tw-text-opacity: 1;
+  color: rgba(252, 252, 252, var(--tw-text-opacity));
+}
+
+.logo-container {
+  display: flex; 
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.logo-container img {
+  margin-right: 10px; 
+}
+.logo-container button {
+  margin-right: 10px; 
+  align-items: center;
+  justify-content: center;
+}
+.logo-container .nav-link svg {
+  width: 29px; 
+  height: 29px;
+}
+
+
+
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul li {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.footer {
+  background-color: #255eaf;
+  color: rgb(255, 255, 255);
+  padding: 20px 0;
+  text-align: center;
+  
+}
+
