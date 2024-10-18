@@ -1,46 +1,91 @@
 import { neon } from '@neondatabase/serverless';
 import { engine } from 'express-handlebars';
 import express from 'express';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import bcrypt from 'bcryptjs'; 
 
+
+const CLAVE_SECRETA = 'sedavueltaelsemestre123';
+const AUTH_COOKIE_NAME = 'segurida';
 const sql = neon('postgresql://udpproyecto_owner:ZcEbr9vWGi8P@ep-small-credit-a5un2coi.us-east-2.aws.neon.tech/udpproyecto?sslmode=require');
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
-app.use('/images', express.static('images')); //rutas estaticasssss
+app.use('/images', express.static('images'));
 app.use(express.static('public'));
 
-app.get('/', async (req, res) => { // base de datoss 
-const lista = await sql('SELECT * FROM playing_with_neon');
-  res.render('productos', {lista});
+app.get('/login', (req, res) => {
+  res.render('login');
 });
 
-app.get('/login', (req,res)=>{
-res.render('login')
+app.get('/signup', (req, res) => {
+  res.render('signup');
 });
 
-app.post('/login', async (req, res) => {
-  const correo = req.body.correo;
-  const contraseña = req.body.contraseña;
+app.get('/', (req, res) => {
+  res.render('productos');
+});
 
-  // Asegúrate de que la consulta coincide con los nombres de tus columnas en la base de datos
-  const query = 'INSERT INTO login (correo, contraseña) VALUES ($1, $2)';
-  
+app.post('/signup', async (req, res) => {
+  const name = req.body.name;
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const hash = bcrypt.hashSync(password, 5);
+  const query = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id';
+
   try {
-    // Inserta los datos en la base de datos
-    await sql(query, [correo, contraseña]);
+    const results = await sql(query, [name, email, hash]);
+    const id = results[0].id;
 
-    // Redirige a la página principal después de guardar los datos
-    res.redirect('/');
+    const fiveMinutesFromNowInSeconds = Math.floor(Date.now() / 1000) + 5 * 60;
+
+    const token = jwt.sign({ id, exp: fiveMinutesFromNowInSeconds }, CLAVE_SECRETA);
+    res.cookie(AUTH_COOKIE_NAME, token, { maxAge: 60 * 5 * 1000, httpOnly: true });
+
+    res.redirect(302, '/profile');
   } catch (error) {
-    console.error('Error al guardar en la base de datos:', error);
-    res.status(500).send('Error al iniciar sesión');
+    console.error('Error al registrar el usuario:', error.message);
+    res.status(500).send('Error al registrarse');
   }
 });
 
-app.listen(3000, () => console.log('tuki'));
+const AuthMiddleware = (req, res, next) => {
+  const token = req.cookies[AUTH_COOKIE_NAME];
+
+  if (!token) {
+    return res.render('unauthorized');
+  }
+
+  try {
+    req.user = jwt.verify(token, CLAVE_SECRETA);
+    next();
+  } catch (e) {
+    res.render('unauthorized');
+  }
+};
+
+app.get('/profile', AuthMiddleware, async (req, res) => {
+  const userId = req.user.id;
+  const query = 'SELECT name, email FROM users WHERE id = $1';
+
+  try {
+    const results = await sql(query, [userId]);
+    const user = results[0];
+
+    res.render('profile', { user });
+  } catch (error) {
+res.render('unauthorized');
+  }
+});
+
+app.listen(3017, () => console.log('Servidor corriendo en el puerto 3014'));
