@@ -24,7 +24,8 @@ app.use('/images', express.static('images'));
 app.use(express.static('public'));
 
 app.get('/login', (req, res) => {
-  res.render('login');
+  const error = req.query.error;
+  res.render('login',{error});
 });
 
 app.get('/signup', (req, res) => {
@@ -34,6 +35,37 @@ app.get('/signup', (req, res) => {
 app.get('/', (req, res) => {
   res.render('productos');
 });
+
+app.post('/login', async (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const query = 'SELECT id, password FROM users WHERE email = $1';
+  const resutls = await sql(query, [email]);
+
+  if (resutls.length === 0) {
+    res.redirect(302, '/login?error=uanuthorized');
+    return;
+  }
+
+  const id = resutls[0].id;
+  const hash = resutls[0].password;
+
+  if (bcrypt.compareSync(password, hash)) {
+    const fiveMinutesFromNowInSeconds = Math.floor(Date.now() / 1000) + 5 * 60;
+
+    const token = jwt.sign({ id, exp: fiveMinutesFromNowInSeconds }, CLAVE_SECRETA);
+    res.cookie(AUTH_COOKIE_NAME, token, { maxAge: 60 * 5 * 1000, httpOnly: true });
+
+    res.redirect(302, '/profile');
+    return;
+  
+  }
+  res.redirect('/login?error=uanuthorized');
+});
+
+
+  
 
 app.post('/signup', async (req, res) => {
   const name = req.body.name;
@@ -88,4 +120,4 @@ res.render('unauthorized');
   }
 });
 
-app.listen(3017, () => console.log('Servidor corriendo en el puerto 3014'));
+app.listen(3019, () => console.log('Servidor corriendo en el puerto 3014'));
