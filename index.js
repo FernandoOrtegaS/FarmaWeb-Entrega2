@@ -54,7 +54,7 @@ const AuthMiddleware = (req, res, next) => {
 };
 
 
-app.post('/login',AuthMiddleware, async (req, res) => {
+app.post('/login', async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
@@ -77,7 +77,7 @@ app.post('/login',AuthMiddleware, async (req, res) => {
     res.redirect(302, '/profile');
     return;
   }
-  res.redirect('/login?error=unauthorized'); // Corregido el typo de "uanuthorized"
+  res.redirect('/login?error=unauthorized'); 
 });
 
 
