@@ -3,8 +3,7 @@ import { engine } from 'express-handlebars';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import bcrypt from 'bcryptjs'; 
-
+import bcrypt from 'bcryptjs';
 
 const CLAVE_SECRETA = 'sedavueltaelsemestre123';
 const AUTH_COOKIE_NAME = 'segurida';
@@ -23,72 +22,20 @@ app.set('views', './views');
 app.use('/images', express.static('images'));
 app.use(express.static('public'));
 
+
 app.get('/login', (req, res) => {
   const error = req.query.error;
-  res.render('login',{error});
+  res.render('login', { error });
 });
+
 
 app.get('/signup', (req, res) => {
   res.render('signup');
 });
 
+
 app.get('/', (req, res) => {
   res.render('productos');
-});
-
-app.post('/login', async (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-
-  const query = 'SELECT id, password FROM users WHERE email = $1';
-  const resutls = await sql(query, [email]);
-
-  if (resutls.length === 0) {
-    res.redirect(302, '/login?error=uanuthorized');
-    return;
-  }
-
-  const id = resutls[0].id;
-  const hash = resutls[0].password;
-
-  if (bcrypt.compareSync(password, hash)) {
-    const fiveMinutesFromNowInSeconds = Math.floor(Date.now() / 1000) + 5 * 60;
-
-    const token = jwt.sign({ id, exp: fiveMinutesFromNowInSeconds }, CLAVE_SECRETA);
-    res.cookie(AUTH_COOKIE_NAME, token, { maxAge: 60 * 5 * 1000, httpOnly: true });
-
-    res.redirect(302, '/profile');
-    return;
-  
-  }
-  res.redirect('/login?error=uanuthorized');
-});
-
-
-  
-
-app.post('/signup', async (req, res) => {
-  const name = req.body.name;
-  const email = req.body.email;
-  const password = req.body.password;
-
-  const hash = bcrypt.hashSync(password, 5);
-  const query = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id';
-
-  try {
-    const results = await sql(query, [name, email, hash]);
-    const id = results[0].id;
-
-    const fiveMinutesFromNowInSeconds = Math.floor(Date.now() / 1000) + 5 * 60;
-
-    const token = jwt.sign({ id, exp: fiveMinutesFromNowInSeconds }, CLAVE_SECRETA);
-    res.cookie(AUTH_COOKIE_NAME, token, { maxAge: 60 * 5 * 1000, httpOnly: true });
-
-    res.redirect(302, '/profile');
-  } catch (error) {
-    console.error('Error al registrar el usuario:', error.message);
-    res.status(500).send('Error al registrarse');
-  }
 });
 
 const AuthMiddleware = (req, res, next) => {
@@ -106,6 +53,36 @@ const AuthMiddleware = (req, res, next) => {
   }
 };
 
+
+app.post('/login',AuthMiddleware, async (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const query = 'SELECT id, password FROM users WHERE email = $1';
+  const results = await sql(query, [email]);
+
+  if (results.length === 0) {
+    res.redirect(302, '/login?error=unauthorized'); // Corregido el typo de "uanuthorized"
+    return;
+  }
+
+  const id = results[0].id;
+  const hash = results[0].password;
+
+  if (bcrypt.compareSync(password, hash)) {
+    const fiveMinutesFromNowInSeconds = Math.floor(Date.now() / 1000) + 5 * 60;
+    const token = jwt.sign({ id, exp: fiveMinutesFromNowInSeconds }, CLAVE_SECRETA);
+
+    res.cookie(AUTH_COOKIE_NAME, token, { maxAge: 60 * 5 * 1000, httpOnly: true });
+    res.redirect(302, '/profile');
+    return;
+  }
+  res.redirect('/login?error=unauthorized'); // Corregido el typo de "uanuthorized"
+});
+
+
+
+
 app.get('/profile', AuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   const query = 'SELECT name, email FROM users WHERE id = $1';
@@ -116,8 +93,9 @@ app.get('/profile', AuthMiddleware, async (req, res) => {
 
     res.render('profile', { user });
   } catch (error) {
-res.render('unauthorized');
+    res.render('unauthorized');
   }
 });
 
-app.listen(3019, () => console.log('Servidor corriendo en el puerto 3014'));
+
+app.listen(3000, () => console.log('Servidor corriendo en el puerto 3000'));
