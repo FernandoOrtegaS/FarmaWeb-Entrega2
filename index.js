@@ -38,22 +38,6 @@ app.get('/', (req, res) => {
   res.render('productos');
 });
 
-const AuthMiddleware = (req, res, next) => {
-  const token = req.cookies[AUTH_COOKIE_NAME];
-
-  if (!token) {
-    return res.render('unauthorized');
-  }
-
-  try {
-    req.user = jwt.verify(token, CLAVE_SECRETA);
-    next();
-  } catch (e) {
-    res.render('unauthorized');
-  }
-};
-
-
 app.post('/login', async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -80,8 +64,42 @@ app.post('/login', async (req, res) => {
   res.redirect('/login?error=unauthorized'); 
 });
 
+app.post('/signup', async (req, res) => {
+  const name = req.body.name;
+  const email = req.body.email;
+  const password = req.body.password;
 
+  const hash = bcrypt.hashSync(password, 5);
 
+  const query = 
+    'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id';
+  const results = await sql(query, [name, email, hash]);
+  const id = results[0].id;
+
+  const fiveMinutesFromNowInSeconds = Math.floor(Date.now() / 1000) + 5 * 60;
+  const token = jwt.sign(
+    { id, exp: fiveMinutesFromNowInSeconds },
+    CLAVE_SECRETA
+  );
+
+  res.cookie(AUTH_COOKIE_NAME, token, { maxAge: 60 * 5 * 1000 });
+  res.redirect(302, '/profile');
+});
+
+const AuthMiddleware = (req, res, next) => {
+  const token = req.cookies[AUTH_COOKIE_NAME];
+
+  if (!token) {
+    return res.render('unauthorized');
+  }
+
+  try {
+    req.user = jwt.verify(token, CLAVE_SECRETA);
+    next();
+  } catch (e) {
+    res.render('unauthorized');
+  }
+};
 
 app.get('/profile', AuthMiddleware, async (req, res) => {
   const userId = req.user.id;
@@ -98,4 +116,4 @@ app.get('/profile', AuthMiddleware, async (req, res) => {
 });
 
 
-app.listen(3000, () => console.log('Servidor corriendo en el puerto 3000'));
+app.listen(3001, () => console.log('Servidor corriendo en el puerto 3000'));
