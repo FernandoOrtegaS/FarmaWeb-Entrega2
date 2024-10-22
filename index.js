@@ -22,6 +22,9 @@ app.set('views', './views');
 app.use('/images', express.static('images'));
 app.use(express.static('public'));
 
+app.get('/administracion', (req, res) => {
+  res.render('administracion');
+});
 
 app.get('/login', (req, res) => {
   const error = req.query.error;
@@ -31,11 +34,6 @@ app.get('/login', (req, res) => {
 
 app.get('/signup', (req, res) => {
   res.render('signup');
-});
-
-
-app.get('/', (req, res) => {
-  res.render('productos');
 });
 
 app.post('/login', async (req, res) => {
@@ -101,6 +99,11 @@ const AuthMiddleware = (req, res, next) => {
   }
 };
 
+app.get('/', async (req, res) => {
+  const lista = await sql('SELECT * FROM playing_with_neon');
+    res.render('productos', {lista});
+  });
+
 app.get('/profile', AuthMiddleware, async (req, res) => {
   const userId = req.user.id;
   const query = 'SELECT name, email FROM users WHERE id = $1';
@@ -116,4 +119,4 @@ app.get('/profile', AuthMiddleware, async (req, res) => {
 });
 
 
-app.listen(3001, () => console.log('Servidor corriendo en el puerto 3000'));
+app.listen(3006, () => console.log('Servidor corriendo en el puerto 3000'));

@@ -25,11 +25,6 @@ legend {
   text-align: center;
 }
 
-.row { /* Cambiado de 'row' a '.row' para que sea una clase válida */
-  margin-top: 10000px;
-  align-items: center;
-  width: 100%;
-}
 
 .div {
   padding: 12px;
@@ -158,4 +153,35 @@ h2 {
   margin-bottom: 0;
   padding-bottom: 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
