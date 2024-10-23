@@ -18,13 +18,12 @@
   margin: auto;
   margin-top: 200px;
   border-radius: 4px;
-  border: 1px solid #000000;
+  border: 1px solid #255eaf;
 }
 
 legend {
   text-align: center;
 }
-
 
 .div {
   padding: 12px;
@@ -153,6 +152,7 @@ h2 {
   margin-bottom: 0;
   padding-bottom: 0;
 }
+
 
 
 
